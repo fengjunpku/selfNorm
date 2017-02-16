@@ -31,8 +31,10 @@ public:
   int GetN();
   int fch,bch;
   TGraph *Pixel;
+  TGraph *fg;
 
   void FindLine();
+  void ReFill();
   double k,b;
   double w;
   bool Drop;

@@ -54,7 +54,7 @@ void scExtract::Load(int face,int back)
           rawPix[i][j].Fill(x,y);
       }
     }
-    }
+  }
   Fit();
   Weight();
   char buff[20];

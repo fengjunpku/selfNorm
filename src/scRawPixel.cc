@@ -26,6 +26,9 @@ void scRawPixel::Init(int frontCh,int backCh)
   Pixel = new TGraph();
   Pixel->SetName(NameBuff);
   Pixel->SetDrawOption("AP*");
+  sprintf(NameBuff,"fg_%02d_%02d",fch,bch);
+  fg = new TGraph();
+  fg->SetName(NameBuff);
 }
 
 void scRawPixel::Fill(double x,double y)
@@ -35,14 +38,15 @@ void scRawPixel::Fill(double x,double y)
 
 void scRawPixel::Write()
 {
-  if(!Pixel) {MiaoError("scRawPixel::Write, Graph is null !");exit(0);}
+  if(!Pixel) {MiaoError("scRawPixel::Write(), Graph is null !");exit(0);}
   //printf("%02d_%02d : Slope : %4f+-%4f; Intercept : %4f+-%4f\n",fch,bch,Slope,ErSlope,Intercept,ErIntercept);
   Pixel->Write();
+  fg->Write();
 }
 
 int scRawPixel::GetN()
 {
-  if(!Pixel) {MiaoError("scRawPixel::Fill, Graph is null !");exit(0);}
+  if(!Pixel) {MiaoError("scRawPixel::GetN(), Graph is null !");exit(0);}
   return Pixel->GetN();
 }
 
@@ -99,8 +103,34 @@ void scRawPixel::FindLine()
   line->SetParameters(b,k);
   line->SetLineColor(kBlue);
   Pixel->GetListOfFunctions()->Add(line);
-  printf("  * %02d,%02d : k= %10.4f, b= %8.2f, w= %8.0f\n",fch,bch,k,b,w);
+  printf("  * find %02d,%02d : k= %10.4f, b= %8.2f, w= %8.0f\n",fch,bch,k,b,w);
   char titleBuff[40];
   sprintf(titleBuff,"P%02d_%02d_k_%f_b_%f_w_%f",fch,bch,k,b,w);
   Pixel->SetTitle(titleBuff);
+}
+
+void scRawPixel::ReFill()
+{
+  int pNum = GetN();
+  int fi = 0;
+  for(int i=0;i<pNum;i++)
+  {
+    Double_t x,y;
+    Pixel->GetPoint(i,x,y);
+    Double_t d = TMath::Abs(y-k*x-b);
+    if(d<5) fg->SetPoint(fi++,x,y);
+  }
+  fg->Fit("pol1","Q");
+  double p0,p1,e0,e1,chi2;
+  int ndf;
+  p0 = fg->GetFunction("pol1")->GetParameter(0);
+  p1 = fg->GetFunction("pol1")->GetParameter(1);
+  e0 = fg->GetFunction("pol1")->GetParError(0);
+  e1 = fg->GetFunction("pol1")->GetParError(1);
+  chi2 = fg->GetFunction("pol1")->GetChisquare();
+  ndf = fg->GetFunction("pol1")->GetNDF();
+  printf("  - fit  %02d,%02d : k= %10.4f, b= %8.2f, chi2= %8.0f\n",fch,bch,p1,p0,chi2);
+  char titleBuff[40];
+  sprintf(titleBuff,"F%02d_%02d_k_%f_b_%f_c2_%f",fch,bch,p1,p0,chi2);
+  fg->SetTitle(titleBuff);
 }

@@ -6,7 +6,7 @@
 #include "JunErrors.hh"
 #include "selCali_def.hh"
 #include "scRawPixel.hh"
-#include "scExtract.hh"
+#include "snExtract.hh"
 
 #include "TStopwatch.h"
 
@@ -19,19 +19,9 @@ int main(int argc,char** argv)
   if(argc != 2 && argc != 4)
     MiaoError("Bad input! Please give a run num!");
   int runNum = atoi(argv[1]);
-  int fn,bn;
-  if(argc == 2)
-  {
-   fn = SCDfaceNum;
-   bn = SCDbackNum;
-  }
-  else
-  {
-    fn = atoi(argv[2]);
-    bn = atoi(argv[3]);
-  }
-  scExtract extr(runNum);
-  extr.Load(fn,bn);
-  extr.Load(bn,fn);
+  TString tele(argv[2]);
+  TString dssd(argv[3]);
+  snExtract extr(runNum,tele,dssd);
+  extr.Load();
   printf("CPU_Time: %f, RealTime: %f\n",watch.CpuTime(),watch.RealTime());
 }

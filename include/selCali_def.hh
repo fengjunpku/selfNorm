@@ -7,11 +7,12 @@
 namespace selCaliDef
 {
   //static const TString SCDinfile = "data/data0190.root";//input file
-  static const TString SCDpath = "/data/d2/CIAE_2016_BCO_DATA/datafile/";//input path
+  static const TString SCDpath = "/data/d2/CIAE_2016_BCO_data/datafile/";//input path
   static const TString SCDtreeName = "tree";//tree name
   static const TString SCDadcName = "madc";//branch name of adc
 
-  static const int SCDadcNum = 11;//num of adc
+  static const int SCDadcNum = 5;//num of adc
+  static const int SCDmadcNum = 11;//num of adc
   static const int SCDfaceNum = 1;//adc No.
   static const int SCDbackNum = 2;
   
