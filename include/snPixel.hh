@@ -30,12 +30,13 @@ public:
   void Clear();
   int GetN();
   int fch,bch;
-  TGraph *Pixel,*fg,*fg2;
+  TGraph *rg,*fg,*fg2;
 
+  void Fit();
   void ReFill();
   void ReFill2();
-  double k,b;
-  double w;
+  bool FitG(TGraph *g);
+  double w0,w1;
   double p0,p1,e0,e1;
   bool Drop;
   int n2k;

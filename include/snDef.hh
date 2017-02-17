@@ -22,5 +22,9 @@ namespace snDefine
   {
     return p[0]*TMath::Cos(x[0]*deg)+p[1]*TMath::Sin(x[0]*deg);
   }
+  inline Double_t pow2(Double_t x)
+  {
+    return x*x;
+  }
 }
 #endif

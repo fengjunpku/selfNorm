@@ -112,6 +112,7 @@ void snExtract::Load()
     }
   }
   Fit();
+  Weight();
   TFile *tmpf = new TFile("x.root","RECREATE","tmpf");
   tmpf->cd();
   Write();
@@ -137,7 +138,7 @@ void snExtract::Fit()
   {
     for(int j=_jZero;j<_jNum+_jZero;j++)
     {
-      //rawPix[i][j].FindLine();
+      rawPix[i][j].Fit();
       //_Ks->Fill(rawPix[i][j].k);
       //_Bs->Fill(rawPix[i][j].b);
       rawPix[i][j].ReFill();
@@ -153,4 +154,59 @@ bool snExtract::Select(double x,double y)
   if(y>1.2*x+300) return false;
   if(x>1.2*y+300) return false;
   return true;
+}
+
+void snExtract::Weight()
+{
+  cout<<"   =======Weight======="<<endl;
+  int refBack = _jZero+_jNum/2;
+  cout<<" *Front:"<<endl;
+  for(int q=_iZero;q<_iNum+_iZero;q++)
+  {
+    
+    Wf0[q] = rawPix[q][refBack].w0;
+    Wf1[q] = rawPix[q][refBack].w1;
+    Kf[q] = Wf1[q] * rawPix[q][refBack].p1;
+    Bf[q] = Wf0[q] * rawPix[q][refBack].p0;
+    fNode[q] = 0.1;
+    for(int i=_iZero;i<_iNum+_iZero;i++)
+    {
+      if(i==q) continue;
+      for(int j=_jZero;j<_jNum+_jZero;j++)
+      {
+        if(j==refBack) continue;
+        if(rawPix[q][j].Drop||rawPix[i][j].Drop||rawPix[i][refBack].Drop) continue;
+        fNode[q] += 1;
+        Double_t K1 = rawPix[q][j].p1;
+        Double_t B1 = rawPix[q][j].p0;
+        Double_t ek1 = rawPix[q][j].e1;
+        Double_t eb1 = rawPix[q][j].e0;
+        
+        Double_t K2 = rawPix[i][j].p1;
+        Double_t B2 = rawPix[i][j].p0;
+        Double_t ek2 = rawPix[i][j].e1;
+        Double_t eb2 = rawPix[i][j].e0;
+
+        Double_t K3 = rawPix[i][refBack].p1;
+        Double_t B3 = rawPix[i][refBack].p0;
+        Double_t ek3 = rawPix[i][refBack].e1;
+        Double_t eb3 = rawPix[i][refBack].e0;
+        //Double_t Wtmp = W1*W2*W3/(W1*W2+W2*W3+W3*W1);
+        Double_t Ktmp = K1*K3/K2;
+        Double_t Wktp = 1./(pow2(K3*ek1/K2)+pow2(K1*ek3/K2)+pow2(K1*K3*ek2/K2/K2));
+        Double_t Btmp = B3+(B1-B2)*K3/K2;
+        Double_t Wbtp = 1./(eb3*eb3+pow2((B1-B2)*ek3/K2)+pow2(K3*eb1/K2)+pow2(K3*eb2/K2)+pow2((B1-B2)*K3*ek2/K2/K2));
+        Kf[q] += Wktp*Ktmp;
+        Bf[q] += Wbtp*Btmp;
+        Wf0[q] += Wbtp;
+        Wf1[q] += Wktp;
+      }
+    }
+    if(Wf1[q]>0)
+      Kf[q] /= Wf1[q];
+    if(Wf0[q]>0)
+      Bf[q] /= Wf0[q];
+    printf("front ch %02d;k: %8.4f, b: %8.2f, w: %16.4f, n: %10.1f\n",q,Kf[q],Bf[q],Wf0[q],fNode[q]);
+  }
+  
 }
