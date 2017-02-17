@@ -164,10 +164,12 @@ void snExtract::Weight()
   for(int q=_iZero;q<_iNum+_iZero;q++)
   {
     
-    Wf0[q] = rawPix[q][refBack].w0;
-    Wf1[q] = rawPix[q][refBack].w1;
-    Kf[q] = Wf1[q] * rawPix[q][refBack].p1;
-    Bf[q] = Wf0[q] * rawPix[q][refBack].p0;
+    W_f[q][0] = rawPix[q][refBack].w0;
+    W_f[q][1] = rawPix[q][refBack].w1;
+    P_f[q][0] = W_f[q][0] * rawPix[q][refBack].p0;
+    P_f[q][1] = W_f[q][1] * rawPix[q][refBack].p1;
+    e_f[q][0] = 0;
+    e_f[q][1] = 0;
     fNode[q] = 0.1;
     for(int i=_iZero;i<_iNum+_iZero;i++)
     {
@@ -196,17 +198,73 @@ void snExtract::Weight()
         Double_t Wktp = 1./(pow2(K3*ek1/K2)+pow2(K1*ek3/K2)+pow2(K1*K3*ek2/K2/K2));
         Double_t Btmp = B3+(B1-B2)*K3/K2;
         Double_t Wbtp = 1./(eb3*eb3+pow2((B1-B2)*ek3/K2)+pow2(K3*eb1/K2)+pow2(K3*eb2/K2)+pow2((B1-B2)*K3*ek2/K2/K2));
-        Kf[q] += Wktp*Ktmp;
-        Bf[q] += Wbtp*Btmp;
-        Wf0[q] += Wbtp;
-        Wf1[q] += Wktp;
+        P_f[q][1] += Wktp*Ktmp;
+        P_f[q][0] += Wbtp*Btmp;
+        W_f[q][1] += Wktp;
+        W_f[q][0] += Wbtp;
       }
     }
-    if(Wf1[q]>0)
-      Kf[q] /= Wf1[q];
-    if(Wf0[q]>0)
-      Bf[q] /= Wf0[q];
-    printf("front ch %02d;k: %8.4f, b: %8.2f, w: %16.4f, n: %10.1f\n",q,Kf[q],Bf[q],Wf0[q],fNode[q]);
+    if(W_f[q][1]>0)
+    {
+      P_f[q][1] /= W_f[q][1];
+      e_f[q][1] = 1./TMath::Sqrt( W_f[q][1]);
+    }
+    if(W_f[q][0]>0)
+    {
+      P_f[q][0] /= W_f[q][0];
+      e_f[q][0] = 1./TMath::Sqrt( W_f[q][0]);
+    }
+    printf("front ch %02d;k: %8.6f +/- %8.6f, b: %8.4f +/- %8.4f, n: %10.1f\n",q,P_f[q][1],e_f[q][1],P_f[q][0],e_f[q][0],fNode[q]);
   }
-  
+  //========================================
+  cout<<" *Back:"<<endl;
+  for(int p=_jZero;p<_jNum+_jZero;p++)
+  {
+    W_b[p][0] = 0;
+    W_b[p][1] = 0;
+    P_b[p][0] = 0;
+    P_b[p][1] = 0;
+    e_b[p][0] = 0;
+    e_b[p][1] = 0;
+    bNode[p] = 0.1;
+    for(int i=_iZero;i<_iNum+_iZero;i++)
+    {
+      if(p==refBack) 
+      {
+        P_b[p][1] = 1;
+        break;
+      }
+      if(rawPix[i][p].Drop||rawPix[i][refBack].Drop) continue;
+      bNode[p] += 1;
+      Double_t K1 = rawPix[i][p].p1;
+      Double_t B1 = rawPix[i][p].p0;
+      Double_t ek1 = rawPix[i][p].e1;
+      Double_t eb1 = rawPix[i][p].e0;
+      
+      Double_t K2 = rawPix[i][refBack].p1;
+      Double_t B2 = rawPix[i][refBack].p0;
+      Double_t ek2 = rawPix[i][refBack].e1;
+      Double_t eb2 = rawPix[i][refBack].e0;
+      //Double_t Wtmp = W1*W2/(W1+W2);
+      Double_t Ktmp = K2/K1;
+      Double_t Wktp = 1./(pow2(ek2/K1)+pow2(K2*ek1/K1/K1));
+      Double_t Btmp = B2-B1*K2/K1;
+      Double_t Wbtp = 1./(pow2(eb2)+pow2(eb1*K2/K1)+pow2(B1*ek2/K1)+pow2(B1*K2*ek1/K1/K1));
+      P_b[p][1] += Wktp*Ktmp;
+      P_b[p][0] += Wbtp*Btmp;
+      W_b[p][1] += Wktp;
+      W_b[p][0] += Wbtp;
+    }
+    if(W_b[p][0]>0)
+    {
+      P_b[p][0] /= W_b[p][0];
+      e_b[p][0] = 1./TMath::Sqrt( W_b[p][0]);
+    }
+    if(W_b[p][1]>0)
+    {
+      P_b[p][1] /= W_b[p][1];
+      e_b[p][1] = 1./TMath::Sqrt( W_b[p][1]);
+    }
+    printf("back  ch %02d;k: %8.6f +/- %8.6f, b: %8.4f +/- %8.4f, n: %10.1f\n",p,P_b[p][1],e_b[p][1],P_b[p][0],e_b[p][0],bNode[p]);
+  }
 }

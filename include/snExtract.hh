@@ -29,8 +29,8 @@ public:
 
   TTree *dtree;
   snPixel rawPix[32][32];
-  Double_t Kf[32],Bf[32],Wf0[32],Wf1[32];
-  Double_t Kb[32],Bb[32],Wb[32];
+  Double_t P_f[32][2],W_f[32][2],e_f[32][2];
+  Double_t P_b[32][2],W_b[32][2],e_b[32][2];
   float fNode[32],bNode[32];
 
 private:

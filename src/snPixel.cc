@@ -67,7 +67,7 @@ void snPixel::Clear()
 void snPixel::Fit()
 {
   FitG(rg);
-  printf(" -- fit %02d,%02d  ------  p0  --------  p1  -------  e0  -------  e1  -- \n",fch,bch);
+  printf(" -- fit %02d,%02d  ------  p0  --------  e0  -------  p1  -------  e1  -- \n",fch,bch);
   printf("                     %4.6f +/- %4.6f,|  %8.4f +/- %8.4f\n",p1,e1,p0,e0);
   char titleBuff[40];
   sprintf(titleBuff,"F0_%02d,%02d_k_%f_b_%f",fch,bch,p1,p0);
