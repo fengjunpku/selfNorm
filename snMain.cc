@@ -4,14 +4,10 @@
 #include "stdlib.h"
 
 #include "JunErrors.hh"
-#include "selCali_def.hh"
-#include "scRawPixel.hh"
 #include "snExtract.hh"
-
 #include "TStopwatch.h"
 
 using namespace std;
-using namespace selCaliDef;
 
 int main(int argc,char** argv)
 {

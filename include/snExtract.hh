@@ -7,10 +7,10 @@
 #include <TStatistic.h>
 
 #include "JunErrors.hh"
-#include "selCali_def.hh"
-#include "scRawPixel.hh"
+#include "snDef.hh"
+#include "snPixel.hh"
 
-using namespace selCaliDef;
+using namespace snDefine;
 
 class snExtract
 {
@@ -28,15 +28,15 @@ public:
   void Output(const char* outfile = "pars.txt");
 
   TTree *dtree;
-  scRawPixel rawPix[SCDiNum][SCDjNum];
-  Double_t Kf[SCDiNum],Bf[SCDiNum],Wf[SCDiNum];
-  Double_t Kb[SCDjNum],Bb[SCDjNum],Wb[SCDjNum];
-  float fNode[SCDiNum],bNode[SCDjNum];
+  snPixel rawPix[32][32];
+  Double_t Kf[32],Bf[32],Wf[32];
+  Double_t Kb[32],Bb[32],Wb[32];
+  float fNode[32],bNode[32];
 
 private:
   TFile *_inputFile;
-  int _adc[SCDadcNum][32];
-  int _madc[SCDmadcNum][32];
+  int _adc[SNadcNum][32];
+  int _madc[SNmadcNum][32];
   int _runNum;
   int _iNum,_jNum;// 16 or 32
   int _iZero,_jZero;

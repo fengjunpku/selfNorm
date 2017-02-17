@@ -1,5 +1,5 @@
-#ifndef SCRAWPIXEL_HH
-#define SCRAWPIXEL_HH 1
+#ifndef SNPIXEL_HH
+#define SNPIXEL_HH 1
 
 #include <iostream>
 #include <string>
@@ -13,30 +13,31 @@
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 
-#include "selCali_def.hh"
+#include "snDef.hh"
 #include "JunErrors.hh"
 
 using namespace std;
-using namespace selCaliDef;
+using namespace snDefine;
 
-class scRawPixel
+class snPixel
 {
 public:
-  scRawPixel();
-  virtual ~scRawPixel();
+  snPixel();
+  virtual ~snPixel();
   void Init(int frontCh,int backCh);
   void Fill(double x,double y);
   void Write();
   void Clear();
   int GetN();
   int fch,bch;
-  TGraph *Pixel;
-  TGraph *fg;
+  TGraph *Pixel,*fg,*fg2;
 
-  void FindLine();
   void ReFill();
+  void ReFill2();
   double k,b;
   double w;
+  double p0,p1,e0,e1;
   bool Drop;
+  int n2k;
 };
 #endif

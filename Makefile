@@ -4,7 +4,7 @@
 
 ###############################################################################
 OBJ = norm.exe
-MainFile = sc_main.cc 
+MainFile = snMain.cc 
 ###############################################################################
 
 SourceFile := $(wildcard src/*.cc) 
@@ -20,7 +20,8 @@ GXX = g++ -std=c++0x
 DIR_INC = -Iinclude 
 #-I$(TARTSYS)/include
 CFLAGS = -Wall -O2 $(DIR_INC) -lTMVA -lMathMore 
-#-lomp -L$(TARTSYS)/lib
+#-fopenmp 
+#-L$(TARTSYS)/lib
 #-lXMLParser -lanacore -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 ###############################################################################
 

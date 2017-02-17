@@ -16,7 +16,7 @@ snExtract::snExtract(int runNo, TString tele, TString dssd)
   char filename[20];
   _runNum = runNo;
   sprintf(filename,"data%04d.root",_runNum);
-  TString datafile = SCDpath+ filename;
+  TString datafile = SNpath+ filename;
   _inputFile = TFile::Open(datafile.Data());
   if(!_inputFile || !_inputFile->IsOpen())
   {
@@ -60,7 +60,7 @@ void snExtract::Init()
 {
   _Ks = new TStatistic("Sta_K");
   _Bs = new TStatistic("Sta_B");
-  _inputFile->GetObject(SCDtreeName.Data(),dtree);
+  _inputFile->GetObject(SNtreeName.Data(),dtree);
   dtree->SetBranchStatus("*",0);
   dtree->SetBranchStatus("madc",1);
   dtree->SetBranchStatus("adc",1);
@@ -82,15 +82,29 @@ void snExtract::Load()
       printf(" %10ld : %5.2f %%\n",ientry,(double)ientry/(double)nentries*100.);
       //cout<<ientry<<"    "<<(double)ientry/(double)nentries*100.<<" %"<<endl;
     dtree->GetEntry(ientry);
+    //count the hit num
+    int nhit = 0;
+    int *fadc,*badc;
+    if(_iGeo<10) fadc = _adc[_iGeo];
+    else     fadc = _madc[_iGeo-10];
+    if(_jGeo<10) badc = _adc[_jGeo];
+    else     badc = _madc[_jGeo-10];
+    for(int i=_iZero;i<_iNum+_iZero;i++)
+    {
+      for(int j=_jZero;j<_jNum+_jZero;j++)
+      {
+        if(fadc[i]>250&&badc[j]>250) nhit++;
+      }
+    }
+    if(nhit != 1) continue;
+    //load data
     for(int i=_iZero;i<_iNum+_iZero;i++)
     {
       for(int j=_jZero;j<_jNum+_jZero;j++)
       {
         double x,y;
-        if(_iGeo<10) x = _adc[_iGeo][i];
-        else     x = _madc[_iGeo-10][i];
-        if(_jGeo<10) y = _adc[_jGeo][j];
-        else     y = _madc[_jGeo-10][j];
+        x = fadc[i];
+        y = badc[j];
         if(_jGeo == 1) y*=2;
         if(Select(x,y))
           rawPix[i][j].Fill(x,y);
@@ -120,19 +134,22 @@ void snExtract::Fit()
 {
   cout<<"   =======Fitting======="<<endl;
   for(int i=_iZero;i<_iNum+_iZero;i++)
+  {
     for(int j=_jZero;j<_jNum+_jZero;j++)
     {
-      rawPix[i][j].FindLine();
-      _Ks->Fill(rawPix[i][j].k);
-      _Bs->Fill(rawPix[i][j].b);
+      //rawPix[i][j].FindLine();
+      //_Ks->Fill(rawPix[i][j].k);
+      //_Bs->Fill(rawPix[i][j].b);
       rawPix[i][j].ReFill();
+      rawPix[i][j].ReFill2();
     }
+  }
 }
 
 bool snExtract::Select(double x,double y)
 {
-  if(x<200||y<200) return false;
-  if(x>SCDmaxCh||y>SCDmaxCh) return false;
+  if(x<250||y<250) return false;
+  if(x>SNmaxCh||y>SNmaxCh) return false;
   if(y>1.2*x+300) return false;
   if(x>1.2*y+300) return false;
   return true;
