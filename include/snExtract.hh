@@ -4,7 +4,6 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
-#include <TStatistic.h>
 
 #include "JunErrors.hh"
 #include "snDef.hh"
@@ -23,9 +22,9 @@ public:
   void Load();
   bool Select(double x,double y);
   void Fit();
-  void Weight();
   void Clear();
-  void Output(const char* outfile = "pars.txt");
+  void Weight();
+  void Output();
 
   TTree *dtree;
   snPixel rawPix[32][32];
@@ -41,6 +40,6 @@ private:
   int _iNum,_jNum;// 16 or 32
   int _iZero,_jZero;
   int _iGeo, _jGeo;
-  TStatistic *_Ks,*_Bs;
+  TString _dname;
 };
 #endif

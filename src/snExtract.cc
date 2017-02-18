@@ -15,6 +15,7 @@ snExtract::snExtract(int runNo, TString tele, TString dssd)
   //open tele root file
   char filename[20];
   _runNum = runNo;
+  _dname = tele + dssd;
   sprintf(filename,"data%04d.root",_runNum);
   TString datafile = SNpath+ filename;
   _inputFile = TFile::Open(datafile.Data());
@@ -52,14 +53,10 @@ snExtract::~snExtract()
 {
   _inputFile->Close();
   delete _inputFile;
-  delete _Ks;
-  delete _Bs;
 }
 
 void snExtract::Init()
 {
-  _Ks = new TStatistic("Sta_K");
-  _Bs = new TStatistic("Sta_B");
   _inputFile->GetObject(SNtreeName.Data(),dtree);
   dtree->SetBranchStatus("*",0);
   dtree->SetBranchStatus("madc",1);
@@ -113,10 +110,11 @@ void snExtract::Load()
   }
   Fit();
   Weight();
-  TFile *tmpf = new TFile("x.root","RECREATE","tmpf");
-  tmpf->cd();
-  Write();
-  tmpf->Close();
+  char fname[20];
+  sprintf(fname,"pix_%s_%04d.root",_dname.Data(),_runNum);
+  Save(fname);
+  Output();
+  Clear();
 }
 
 void snExtract::Write()
@@ -131,6 +129,21 @@ void snExtract::Write()
   }
 }
 
+void snExtract::Save(const char* tmpfile)
+{
+  TFile *tmpf = new TFile(tmpfile,"RECREATE","tmpf");
+  tmpf->cd();
+  Write();
+  tmpf->Close();
+}
+
+void snExtract::Clear()
+{
+  for(int i=_iZero;i<_iNum+_iZero;i++)
+    for(int j=_jZero;j<_jNum+_jZero;j++)
+      rawPix[i][j].Clear();
+}
+
 void snExtract::Fit()
 {
   cout<<"   =======Fitting======="<<endl;
@@ -139,8 +152,6 @@ void snExtract::Fit()
     for(int j=_jZero;j<_jNum+_jZero;j++)
     {
       rawPix[i][j].Fit();
-      //_Ks->Fill(rawPix[i][j].k);
-      //_Bs->Fill(rawPix[i][j].b);
       rawPix[i][j].ReFill();
       rawPix[i][j].ReFill2();
     }
@@ -267,4 +278,23 @@ void snExtract::Weight()
     }
     printf("back  ch %02d;k: %8.6f +/- %8.6f, b: %8.4f +/- %8.4f, n: %10.1f\n",p,P_b[p][1],e_b[p][1],P_b[p][0],e_b[p][0],bNode[p]);
   }
+}
+
+void snExtract::Output()
+{
+  FILE *out;
+  char buff[20];
+  sprintf(buff,"sn_%sf_%04d.txt",_dname.Data(),_runNum);
+  out = fopen(buff,"w+");
+  if(!out) MiaoError("scExtract::Output, Can't open output file !");
+  for(int i=_iZero;i<_iNum+_iZero;i++)
+    fprintf(out, "    %f     %f     %f     %f\n",P_f[i][0],e_f[i][0],P_f[i][1],e_f[i][1]);
+  fclose(out);
+  //---
+  sprintf(buff,"sn_%sb_%04d.txt",_dname.Data(),_runNum);
+  out = fopen(buff,"w+");
+  if(!out) MiaoError("scExtract::Output, Can't open output file !");
+  for(int j=_jZero;j<_jNum+_jZero;j++)
+    fprintf(out, "    %f     %f     %f     %f\n",P_b[j][0],e_b[j][0],P_b[j][1],e_b[j][1]);
+  fclose(out);
 }

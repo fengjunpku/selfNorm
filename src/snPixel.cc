@@ -62,6 +62,8 @@ int snPixel::GetN()
 void snPixel::Clear()
 {
   rg->Clear();
+  fg->Clear();
+  fg2->Clear();
 }
 
 void snPixel::Fit()
